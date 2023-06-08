@@ -2,7 +2,7 @@ const express = require("express")
 app = express()
 app.use(express.json())
 
-persons = [
+let persons = [
     { 
       "id": 1,
       "name": "Arto Hellas", 
@@ -50,6 +50,46 @@ app.get('/api/persons/:id', (request, response) => {
     }
 
     response.json(person)
+})
+
+const generateId = () => {
+    return Math.floor(Math.random() * 1000000)
+}
+
+app.post('/api/persons', (request, response) => {
+    if(request.get('Content-Type') !== 'application/json') {
+        return response.status(400).end()
+    }
+
+    const data = request.body
+
+    if(!data.name) {
+        return response.status(400).json({
+            'error': 'Name is missing'
+        })
+    }
+
+    if(!data.phone) {
+        return response.status(400).json({
+            'error': 'Phone is missing'
+        })
+    }
+
+    if(persons.find(p => p.name === data.name)) {
+        return response.status(400).json({
+            'error': 'Person already exists'
+        })
+    }
+
+    const person = {
+        name: data.name,
+        phone: data.phone,
+        id: generateId()
+    }
+
+    persons = persons.concat(person)
+
+    response.status(200).json(person)
 })
 
 app.delete('/api/persons/:id', (request, response) => {
